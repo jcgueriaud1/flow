@@ -303,11 +303,11 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
         }
     }
 
-    private static String inlineHTML(String html) {
+    static String inlineHTML(String html) {
         // Format the received html into a form which will fit nicely as a
         // one-liner to .innerHTML="{html}", since we cannot use
         // ES6 back-ticks (``) for multi-line text
-        return html
+        return makeMultiLineComments(html)
                 // escape backslashes
                 .replace("\\", "\\\\")
                 // escape quotes
@@ -320,6 +320,25 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
                 .replace("\t", "")
                 .replace("\n", "")
                 .replace("\r", "");
+    }
+
+    /**
+     * Make any single line comment into multiline comment so it doesn't break the code when new lines are removed.
+     * @param html string to parse
+     * @return content with and {@code // comment line} changed
+     */
+    private static String makeMultiLineComments(String html) {
+        String[] lines = html.split("\n");
+        StringBuilder inlineHtml = new StringBuilder();
+        for(String line : lines) {
+            String content = line.trim();
+            if(content.startsWith("//")) {
+                // Change single line comments into multiline
+                content = content.replaceAll("//([^\n]*)", "/*$1*/");
+            }
+            inlineHtml.append(content);
+        }
+        return inlineHtml.toString();
     }
 
     /**
